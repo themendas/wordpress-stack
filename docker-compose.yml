@@ -1,0 +1,36 @@
+version: '3'
+services:
+  wp-nginx:
+    container_name: wp-nginx
+    hostname: wp-nginx
+    restart: always
+    build: ./php-fpm
+    ports:
+      - "8081:8080"
+    environment:
+      WORDPRESS_ADMIN: us_wp_admins
+      WORDPRESS_PASS: (gh)!)fkhTF#T*gQzS
+
+    links:
+      - "wp-mysql:wp-mysql"
+
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./www:/var/www
+
+
+  wp-mysql:
+    container_name: wp-mysql
+    hostname: wp-mysql
+    build: ./mysql8
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./db:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: P44sW0rdR00t
+      MYSQL_PASSWORD: p4ssw0rPr3SSmyP331
+      MYSQL_DATABASE: db_wp-srv
+      MYSQL_USER: us_wp-admins
+    ports:
+      - "3306:3306"
