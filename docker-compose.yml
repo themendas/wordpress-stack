@@ -1,36 +1,50 @@
-version: '3'
+version: '3.1'
+
 services:
-  wp-nginx:
-    container_name: wp-nginx
-    hostname: wp-nginx
+
+  web_wordpress:
+    container_name: web_wordpress
+    image: wordpress
     restart: always
-    build: ./php-fpm
+    stdin_open: true
+    tty: true
     ports:
-      - "8081:8080"
+      - 8888:80
     environment:
-      WORDPRESS_ADMIN: us_wp_admins
-      WORDPRESS_PASS: (gh)!)fkhTF#T*gQzS
-
+      WORDPRESS_DB_HOST: db_wordpress
+      WORDPRESS_DB_USER: us_wp_user
+      WORDPRESS_DB_PASSWORD: WP_p4SSw0rd!
+      WORDPRESS_DB_NAME: db_wp_database
     links:
-      - "wp-mysql:wp-mysql"
-
+      - "db_wordpress:db_wordpress"
     volumes:
       - /etc/localtime:/etc/localtime
-      - ./www:/var/www
+      - ./www:/var/www/html
 
-
-  wp-mysql:
-    container_name: wp-mysql
-    hostname: wp-mysql
-    build: ./mysql8
+  db_wordpress:
+    container_name: db_wordpress
+    image: mysql:8
     restart: always
+    environment:
+      MYSQL_DATABASE: db_wp_database
+      MYSQL_USER: us_wp_user
+      MYSQL_PASSWORD: WP_p4SSw0rd!
+      MYSQL_ROOT_PASSWORD: P4SSw0rd!r00tDB
     volumes:
       - /etc/localtime:/etc/localtime
       - ./db:/var/lib/mysql
+      - ./config/my.cnf:/etc/mysql/my.cnf:ro
+      - ./config/my-docker.cnf:/etc/mysql/conf.d/docker.cnf:ro
+      
+  wp_nginx: 
+    container_name: wp_nginx
+    image: nginx:latest
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: P44sW0rdR00t
-      MYSQL_PASSWORD: p4ssw0rPr3SSmyP331
-      MYSQL_DATABASE: db_wp-srv
-      MYSQL_USER: us_wp-admins
+      WEB_FQDN: www.example.com
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ./config/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./config/defailt-nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - "3306:3306"
+      - 80:80
